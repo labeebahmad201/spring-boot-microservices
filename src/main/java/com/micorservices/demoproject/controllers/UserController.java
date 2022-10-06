@@ -58,6 +58,7 @@ public class UserController {
 
         String firstname = null;
         int len = firstname.length();
+        
 
         UserRest returnValue = new UserRest();
         returnValue.setEmail(userDetailModelRequest.getEmail());
