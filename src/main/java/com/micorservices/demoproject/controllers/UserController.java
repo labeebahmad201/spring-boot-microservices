@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.micorservices.demoproject.exceptions.FirstNameNullException;
 import com.micorservices.demoproject.ui.model.request.UserDetailModelRequest;
 import com.micorservices.demoproject.ui.model.request.UserDetailUpdateRequest;
 import com.micorservices.demoproject.ui.model.response.UserRest;
@@ -54,10 +55,15 @@ public class UserController {
             MediaType.APPLICATION_XML_VALUE,
         }        
     )
-    public UserRest createUser(@Valid @RequestBody UserDetailModelRequest userDetailModelRequest){
+    public UserRest createUser(@Valid @RequestBody UserDetailModelRequest userDetailModelRequest) throws FirstNameNullException{
 
         String firstname = null;
-        int len = firstname.length();
+        try{
+            int len = firstname.length();
+        }catch(Exception e){
+            throw new FirstNameNullException(e.getMessage());
+        }
+
         
 
         UserRest returnValue = new UserRest();
