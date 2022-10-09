@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,16 @@ import com.micorservices.demoproject.exceptions.FirstNameNullException;
 import com.micorservices.demoproject.ui.model.request.UserDetailModelRequest;
 import com.micorservices.demoproject.ui.model.request.UserDetailUpdateRequest;
 import com.micorservices.demoproject.ui.model.response.UserRest;
+import com.micorservices.demoproject.userservice.UserService;
 
 @RestController
 @RequestMapping("users")
 public class UserController {
 
     HashMap<String, UserRest> users = new HashMap<String, UserRest>(); 
+    
+    @Autowired
+    UserService userService;
 
     @GetMapping
     public String getUsers(@RequestParam(value="page") int page, @RequestParam(value="limit", defaultValue = "10") int limit){
@@ -38,9 +43,9 @@ public class UserController {
 
     @GetMapping(value="/{userId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<UserRest> getUser(@PathVariable String userId){
-        UserRest returnValue = this.users.get(userId);
+        UserRest returnValue = this.userService.getUser(userId);
         if(returnValue == null){
-            return new ResponseEntity<UserRest>(returnValue, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<UserRest>(returnValue, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
@@ -55,27 +60,21 @@ public class UserController {
             MediaType.APPLICATION_XML_VALUE,
         }        
     )
-    public UserRest createUser(@Valid @RequestBody UserDetailModelRequest userDetailModelRequest) throws FirstNameNullException{
+    public UserRest createUser(@Valid @RequestBody UserDetailModelRequest userDetailModelRequest){
 
-        String firstname = null;
-        try{
-            int len = firstname.length();
-        }catch(Exception e){
-            throw new FirstNameNullException(e.getMessage());
-        }
-
+        /*****
+         * Uncomment following to test exception handling scenarios. 
+         * ***/
+        /***
+         *  String firstname = null;
+            try{
+                int len = firstname.length();
+            }catch(Exception e){
+                throw new FirstNameNullException(e.getMessage());
+            }
+        */
         
-
-        UserRest returnValue = new UserRest();
-        returnValue.setEmail(userDetailModelRequest.getEmail());
-        returnValue.setFirstName(userDetailModelRequest.getFirstName());
-        returnValue.setLastName(userDetailModelRequest.getLastName());
-        returnValue.setUserId(UUID.randomUUID().toString());
-
-        if( this.users.get(returnValue.getUserId()) == null ){
-            this.users.put(returnValue.getUserId(), returnValue);
-        }
-        return returnValue;
+        return this.userService.createUser(userDetailModelRequest);
     }
 
     @PutMapping(
@@ -90,25 +89,23 @@ public class UserController {
         }        
     )
     public ResponseEntity<UserRest> updateUser(@PathVariable String userId, @Valid @RequestBody UserDetailUpdateRequest userDetailUpdateRequest){
-        UserRest  userRest = this.users.get(userId);
+        UserRest  userRest = this.userService.updateUser(userDetailUpdateRequest, userId);
 
         if(userRest == null){
             return new ResponseEntity<UserRest>(HttpStatus.NOT_FOUND);
         }
 
-        userRest.setFirstName(userDetailUpdateRequest.getFirstName());
-        userRest.setLastName(userDetailUpdateRequest.getLastName());
-        UserRest updatedUserRest = this.users.put(userId, userRest);
-        return new ResponseEntity<UserRest>(updatedUserRest, HttpStatus.OK);
+        return new ResponseEntity<UserRest>( userRest, HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId){
-        UserRest userRest = this.users.get(userId);
+
+        UserRest userRest = this.userService.deleteUser(userId);
         if(userRest == null){
             return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
         }
-        this.users.remove(userId);
+        
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 }
