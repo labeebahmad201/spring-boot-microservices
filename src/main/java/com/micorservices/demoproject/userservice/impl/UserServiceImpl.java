@@ -1,18 +1,32 @@
 package com.micorservices.demoproject.userservice.impl;
 
+import com.micorservices.demoproject.shared.Utils;
 import com.micorservices.demoproject.ui.model.request.UserDetailModelRequest;
 import com.micorservices.demoproject.ui.model.request.UserDetailUpdateRequest;
 import com.micorservices.demoproject.ui.model.response.UserRest;
 import com.micorservices.demoproject.userservice.UserService;
 import java.util.HashMap;
-import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private HashMap<String, UserRest> users = new HashMap<String, UserRest>(); 
+
+    private Utils utils;
+
+    public void UserServiceImp(){}
+
+    /***
+     * 
+     * the followin construtor shows how to do constructor based dependency injection. 
+     */
+    @Autowired
+    public void UserServiceImp(Utils utils){
+        this.utils = utils;
+    }
 
     @Override
     public UserRest createUser(UserDetailModelRequest userDetailModelRequest) {
@@ -21,7 +35,7 @@ public class UserServiceImpl implements UserService {
         returnValue.setEmail(userDetailModelRequest.getEmail());
         returnValue.setFirstName(userDetailModelRequest.getFirstName());
         returnValue.setLastName(userDetailModelRequest.getLastName());
-        returnValue.setUserId(UUID.randomUUID().toString());
+        returnValue.setUserId(this.utils.generateRandomString());
 
         if( this.users.get(returnValue.getUserId()) == null ){
             this.users.put(returnValue.getUserId(), returnValue);
